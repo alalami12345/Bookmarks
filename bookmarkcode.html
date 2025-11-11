@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bookmark Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #171a2d;
+      --text: #e8ecf1;
+      --muted: #9aa7b4;
+      --accent: #7c9cff;
+      --accent-2: #34d399;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --border: #263149;
+      --shadow: 0 10px 20px rgba(0,0,0,0.35);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #1a2040 0%, var(--bg) 45%, #0b0d18 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge {
+      background: linear-gradient(145deg, var(--accent), #9bb6ff);
+      color: #0b1020;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      background: linear-gradient(180deg, #14182b 0%, var(--panel) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* Auth */
+    .auth {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    .auth h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+    .auth p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    input[type="text"], input[type="password"], input[type="url"], input[type="search"] {
+      background: #0f1430;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,156,255,0.15);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    button {
+      background: var(--accent);
+      color: #0b1020;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #2a3358;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    button.warn {
+      background: var(--warn);
+      color: #0b1020;
+    }
+    .msg {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: none;
+    }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      background: #131737;
+    }
+    .spacer { flex: 1; }
+    .user {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      padding: 18px;
+    }
+    @media (max-width: 900px) {
+      .content { grid-template-columns: 1fr; }
+    }
+
+    .section {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #101532;
+    }
+    .section h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    /* Bookmark list */
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0e1330;
+    }
+    .card a {
+      color: var(--accent-2);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .card .meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Empty state */
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 12a8 8 0 1 1 16 0v3a3 3 0 0 1-3 3h-2v-6a3 3 0 1 0-6 0v6H7a3 3 0 0 1-3-3v-3Z" stroke="#7c9cff" stroke-width="1.5"/>
+        </svg>
+        <div>Bookmark Hub</div>
+      </div>
+      <div class="badge">Local-first • No backend required</div>
+    </header>
+
+    <!-- AUTH PANEL -->
+    <div id="authPanel" class="panel">
+      <div class="auth">
+        <!-- Login -->
+        <div>
+          <h2>Login</h2>
+          <p>Welcome back. Enter your credentials to access your bookmarks.</p>
+          <div class="field">
+            <label for="loginUser">Username</label>
+            <input id="loginUser" type="text" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="loginPass">Password</label>
+            <input id="loginPass" type="password" autocomplete="current-password" />
+          </div>
+          <div class="row">
+            <button id="loginBtn">Login</button>
+            <button id="demoBtn" class="secondary">Try demo</button>
+          </div>
+          <div id="loginMsg" class="msg"></div>
+        </div>
+
+        <!-- Signup -->
+        <div>
+          <h2>Sign up</h2>
+          <p>Create an account. Your data is stored in your browser only.</p>
+          <div class="field">
+            <label for="signupUser">Username</label>
+            <input id="signupUser" type="text" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="signupPass">Password</label>
+            <input id="signupPass" type="password" autocomplete="new-password" />
+          </div>
+          <div class="row">
+            <button id="signupBtn" class="warn">Create account</button>
+          </div>
+          <div id="signupMsg" class="msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="panel dashboard">
+      <div class="toolbar">
+        <input id="searchInput" type="search" placeholder="Search bookmarks… (title, tags, URL)" style="flex:2;" />
+        <div class="spacer"></div>
+        <div class="user" id="userLabel"></div>
+        <button id="logoutBtn" class="secondary">Logout</button>
+      </div>
+
+      <div class="content">
+        <!-- Bookmarks -->
+        <div class="section">
+          <h3>Your bookmarks</h3>
+          <div id="bookmarkList" class="list"></div>
+          <div id="emptyState" class="empty" style="display:none;">No bookmarks yet. Add your first on the right.</div>
+        </div>
+
+        <!-- Add / Edit -->
+        <div class="section">
+          <h3>Add or edit bookmark</h3>
+          <div class="field">
+            <label for="bmTitle">Title</label>
+            <input id="bmTitle" type="text" placeholder="e.g., Roblox dev forum" />
+          </div>
+          <div class="field">
+            <label for="bmUrl">URL</label>
+            <input id="bmUrl" type="url" placeholder="https://example.com" />
+          </div>
+          <div class="field">
+            <label for="bmTags">Tags (comma-separated)</label>
+            <input id="bmTags" type="text" placeholder="dev, scripting, docs" />
+          </div>
+          <div class="row">
+            <button id="saveBookmarkBtn">Save bookmark</button>
+            <button id="resetFormBtn" class="secondary">Reset</button>
+            <button id="searchWebBtn" class="secondary">Search the web</button>
+          </div>
+          <div id="formMsg" class="msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Built for local use. Data stays in your browser’s localStorage. Clear storage to reset.
+    </footer>
+  </div>
+
+  <script>
+    // --- Simple local-first auth + bookmarks ---
+    const LS_KEY = 'bookmarkHub_v1';
+
+    const state = {
+      user: null,       // string username
+      editId: null,     // id of bookmark being edited
+      search: ''
+    };
+
+    // Utilities
+    function getDB() {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return { users: {}, bookmarks: {} };
+      try { return JSON.parse(raw); } catch { return { users: {}, bookmarks: {} }; }
+    }
+    function setDB(db) { localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+
+    function hash(str) {
+      // Lightweight non-crypto hash for demo purposes
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h * 16777619) >>> 0;
+      }
+      return h.toString(16);
+    }
+
+    function saveUser(username, password) {
+      const db = getDB();
+      if (db.users[username]) return { ok: false, msg: 'Username already exists.' };
+      db.users[username] = { pass: hash(password), createdAt: Date.now() };
+      db.bookmarks[username] = [];
+      setDB(db);
+      return { ok: true, msg: 'Account created. You can log in now.' };
+    }
+
+    function login(username, password) {
+      const db = getDB();
+      const u = db.users[username];
+      if (!u) return { ok: false, msg: 'User not found.' };
+      if (u.pass !== hash(password)) return { ok: false, msg: 'Incorrect password.' };
+      state.user = username;
+      return { ok: true, msg: 'Logged in.' };
+    }
+
+    function logout() {
+      state.user = null;
+      state.editId = null;
+      render();
+    }
+
+    // Bookmarks CRUD
+    function addOrUpdateBookmark({ id, title, url, tags }) {
+      if (!state.user) return;
+      const db = getDB();
+      const list = db.bookmarks[state.user] || [];
+      if (!id) {
+        id = crypto.randomUUID();
+        list.push({ id, title, url, tags, createdAt: Date.now(), updatedAt: Date.now() });
+      } else {
+        const idx = list.findIndex(b => b.id === id);
+        if (idx >= 0) list[idx] = { ...list[idx], title, url, tags, updatedAt: Date.now() };
+      }
+      db.bookmarks[state.user] = list;
+      setDB(db);
+      state.editId = null;
+      return id;
+    }
+
+    function deleteBookmark(id) {
+      if (!state.user) return;
+      const db = getDB();
+      db.bookmarks[state.user] = (db.bookmarks[state.user] || []).filter(b => b.id !== id);
+      setDB(db);
+    }
+
+    function getBookmarks() {
+      if (!state.user) return [];
+      const db = getDB();
+      return db.bookmarks[state.user] || [];
+    }
+
+    // DOM elements
+    const authPanel = document.getElementById('authPanel');
+    const dashboard = document.getElementById('dashboard');
+    const loginUser = document.getElementById('loginUser');
+    const loginPass = document.getElementById('loginPass');
+    const loginBtn = document.getElementById('loginBtn');
+    const demoBtn = document.getElementById('demoBtn');
+    const loginMsg = document.getElementById('loginMsg');
+
+    const signupUser = document.getElementById('signupUser');
+    const signupPass = document.getElementById('signupPass');
+    const signupBtn = document.getElementById('signupBtn');
+    const signupMsg = document.getElementById('signupMsg');
+
+    const userLabel = document.getElementById('userLabel');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const searchInput = document.getElementById('searchInput');
+    const bookmarkList = document.getElementById('bookmarkList');
+    const emptyState = document.getElementById('emptyState');
+
+    const bmTitle = document.getElementById('bmTitle');
+    const bmUrl = document.getElementById('bmUrl');
+    const bmTags = document.getElementById('bmTags');
+    const saveBookmarkBtn = document.getElementById('saveBookmarkBtn');
+    const resetFormBtn = document.getElementById('resetFormBtn');
+    const searchWebBtn = document.getElementById('searchWebBtn');
+    const formMsg = document.getElementById('formMsg');
+
+    // Event wiring
+    signupBtn.addEventListener('click', () => {
+      const u = signupUser.value.trim();
+      const p = signupPass.value.trim();
+      if (!u || !p) { signupMsg.textContent = 'Please enter username and password.'; return; }
+      const res = saveUser(u, p);
+      signupMsg.textContent = res.msg;
+      if (res.ok) {
+        loginUser.value = u;
+        loginPass.value = p;
+      }
+    });
+
+    loginBtn.addEventListener('click', () => {
+      const u = loginUser.value.trim();
+      const p = loginPass.value.trim();
+      const res = login(u, p);
+      loginMsg.textContent = res.msg;
+      if (res.ok) render();
+    });
+
+    demoBtn.addEventListener('click', () => {
+      // Create a demo user if missing
+      const db = getDB();
+      if (!db.users.demo) {
+        db.users.demo = { pass: hash('demo'), createdAt: Date.now() };
+        db.bookmarks.demo = [
+          { id: crypto.randomUUID(), title: 'Roblox Dev Forum', url: 'https://devforum.roblox.com', tags: 'roblox, scripting, docs', createdAt: Date.now(), updatedAt: Date.now() },
+          { id: crypto.randomUUID(), title: 'MDN Web Docs', url: 'https://developer.mozilla.org', tags: 'web, docs, javascript', createdAt: Date.now(), updatedAt: Date.now() },
+          { id: crypto.randomUUID(), title: 'Node.js', url: 'https://nodejs.org', tags: 'node, runtime', createdAt: Date.now(), updatedAt: Date.now() }
+        ];
+        setDB(db);
+      }
+      const res = login('demo', 'demo');
+      loginMsg.textContent = res.msg;
+      if (res.ok) render();
+    });
+
+    logoutBtn.addEventListener('click', logout);
+
+    searchInput.addEventListener('input', e => {
+      state.search = e.target.value.toLowerCase();
+      renderBookmarks();
+    });
+
+    saveBookmarkBtn.addEventListener('click', () => {
+      const title = bmTitle.value.trim();
+      const url = bmUrl.value.trim();
+      const tags = bmTags.value.trim();
+      if (!title || !url) {
+        formMsg.textContent = 'Title and URL are required.';
+        return;
+      }
+      try {
+        new URL(url);
+      } catch {
+        formMsg.textContent = 'Please enter a valid URL (including https://).';
+        return;
+      }
+      const id = addOrUpdateBookmark({ id: state.editId, title, url, tags });
+      formMsg.textContent = state.editId ? 'Bookmark updated.' : 'Bookmark saved.';
+      clearForm();
+      renderBookmarks();
+      // Optional: open immediately after save
+      // window.open(url, '_blank');
+    });
+
+    resetFormBtn.addEventListener('click', () => {
+      state.editId = null;
+      clearForm();
+      formMsg.textContent = 'Form reset.';
+    });
+
+    searchWebBtn.addEventListener('click', () => {
+      const q = searchInput.value.trim() || bmTitle.value.trim();
+      if (!q) { formMsg.textContent = 'Enter a search query in the toolbar or title field.'; return; }
+      const url = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+      window.open(url, '_blank');
+    });
+
+    function clearForm() {
+      bmTitle.value = '';
+      bmUrl.value = '';
+      bmTags.value = '';
+    }
+
+    // Render
+    function render() {
+      const loggedIn = !!state.user;
+      authPanel.style.display = loggedIn ? 'none' : 'block';
+      dashboard.style.display = loggedIn ? 'block' : 'none';
+      userLabel.textContent = loggedIn ? ('Signed in as ' + state.user) : '';
+      renderBookmarks();
+    }
+
+    function renderBookmarks() {
+      const items = getBookmarks();
+      const q = state.search;
+      const filtered = !q ? items : items.filter(b => {
+        const hay = (b.title + ' ' + b.url + ' ' + (b.tags || '')).toLowerCase();
+        return hay.includes(q);
+      });
+
+      bookmarkList.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+
+      for (const b of filtered) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const left = document.createElement('div');
+        const link = document.createElement('a');
+        link.href = b.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = b.title;
+        left.appendChild(link);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = (b.tags ? `Tags: ${b.tags} • ` : '') + b.url;
+        left.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'secondary';
+        openBtn.textContent = 'Open';
+        openBtn.addEventListener('click', () => window.open(b.url, '_blank'));
+        actions.appendChild(openBtn);
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => {
+          state.editId = b.id;
+          bmTitle.value = b.title;
+          bmUrl.value = b.url;
+          bmTags.value = b.tags || '';
+          formMsg.textContent = 'Editing bookmark…';
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+        actions.appendChild(editBtn);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'danger';
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', () => {
+          if (confirm('Delete this bookmark?')) {
+            deleteBookmark(b.id);
+            renderBookmarks();
+          }
+        });
+        actions.appendChild(delBtn);
+
+        card.appendChild(left);
+        card.appendChild(actions);
+        bookmarkList.appendChild(card);
+      }
+    }
+
+    // Auto-render if a session exists (simple session: last logged-in username)
+    (function init() {
+      // Persist a "lastUser" simple session marker
+      const db = getDB();
+      // If you want auto-login last user, uncomment below and store last user separately.
+      // For privacy, we keep explicit login.
+      render();
+    })();
+  </script>
+</body>
+</html>
